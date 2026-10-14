@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Professor • EETI Jacimar Gama • 2º 4</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Top Navigation -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-30 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg shadow-indigo-500/20">
+          📊
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">EETI Bilíngue Profª. Jacimar Da Silva Gama</span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              Tempo Real
+            </span>
+          </div>
+          <h1 class="text-lg font-extrabold text-white">Painel de Acompanhamento • Matemática (2º 4)</h1>
+          <p class="text-xs text-slate-400">Professor Natanael • Atividade: Introdução ao Sistema Linear 3x3</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2.5">
+        <button onclick="copyStudentLink()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2">
+          <span>🔗</span> Copiar Link dos Alunos
+        </button>
+        <a href="/api/export-csv" download class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs rounded-xl transition-all flex items-center gap-2">
+          <span>📥</span> Baixar Planilha (Excel)
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto p-6 space-y-6">
+
+    <!-- Metrics Overview -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="text-xs font-semibold text-slate-400">Total de Alunos</div>
+        <div id="stat-total" class="text-2xl font-black text-white mt-1">24</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">Turma 2º 4</div>
+      </div>
+
+      <div class="bg-slate-900 border border-emerald-500/30 rounded-2xl p-4 shadow-sm">
+        <div class="text-xs font-semibold text-emerald-400 flex items-center justify-between">
+          <span>Entregaram</span>
+          <span>✅</span>
+        </div>
+        <div id="stat-delivered" class="text-2xl font-black text-emerald-400 mt-1">0</div>
+        <div id="stat-delivered-pct" class="text-[11px] text-slate-400 mt-0.5">0% da turma</div>
+      </div>
+
+      <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-4 shadow-sm">
+        <div class="text-xs font-semibold text-amber-400 flex items-center justify-between">
+          <span>Pendentes</span>
+          <span>⏳</span>
+        </div>
+        <div id="stat-pending" class="text-2xl font-black text-amber-400 mt-1">24</div>
+        <div class="text-[11px] text-slate-400 mt-0.5">Aguardando envio</div>
+      </div>
+
+      <div class="bg-slate-900 border border-indigo-500/30 rounded-2xl p-4 shadow-sm">
+        <div class="text-xs font-semibold text-indigo-400 flex items-center justify-between">
+          <span>Média da Turma</span>
+          <span>⭐</span>
+        </div>
+        <div id="stat-avg" class="text-2xl font-black text-indigo-400 mt-1">0.0</div>
+        <div class="text-[11px] text-slate-400 mt-0.5">Pontuação máxima: 8.0</div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-bold text-slate-300">Progresso de Entregas da Turma:</span>
+        <span id="progress-pct-text" class="font-bold text-indigo-400">0%</span>
+      </div>
+      <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden p-0.5 border border-slate-800">
+        <div id="progress-bar-fill" class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Controls and Filters -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <div class="relative flex-1 sm:w-64">
+          <input type="text" id="search-input" oninput="filterStudents()" placeholder="Buscar aluno..." class="w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition-all">
+          <span class="absolute right-3 top-2.5 text-slate-500 text-xs">🔍</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs w-full sm:w-auto justify-center">
+        <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1.5 rounded-lg font-bold bg-indigo-600 text-white transition-all">Todos (24)</button>
+        <button onclick="setFilter('delivered')" id="filter-delivered" class="px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition-all">Entregues</button>
+        <button onclick="setFilter('pending')" id="filter-pending" class="px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition-all">Pendentes</button>
+      </div>
+    </div>
+
+    <!-- Student Cards Grid -->
+    <div id="students-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+      <!-- Injected via JS -->
+    </div>
+
+  </main>
+
+  <!-- Modal: Respostas Detalhadas do Aluno -->
+  <div id="details-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <div class="text-[10px] font-bold uppercase text-indigo-400 tracking-wider">Detalhamento da Entrega</div>
+          <h3 id="modal-student-name" class="text-base font-black text-white"></h3>
+          <div id="modal-student-time" class="text-xs text-slate-400"></div>
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white text-xl font-bold p-1">✕</button>
+      </div>
+
+      <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
+        <span class="text-xs text-slate-400 font-semibold">Nota Final:</span>
+        <span id="modal-student-score" class="text-base font-extrabold text-emerald-400"></span>
+      </div>
+
+      <div id="modal-answers-list" class="space-y-2.5">
+        <!-- Injected via JS -->
+      </div>
+
+      <button onclick="closeModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition-all">
+        Fechar Detalhes
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let dashboardData = { students: [] };
+    let currentFilter = 'all';
+
+    async function loadInitialData() {
+      try {
+        const res = await fetch('/api/dashboard');
+        dashboardData = await res.json();
+        updateUI();
+      } catch (e) {
+        console.error("Erro ao carregar dados:", e);
+      }
+    }
+
+    // Connect to Server-Sent Events (SSE) for Real-Time Updates
+    function connectSSE() {
+      const sse = new EventSource('/api/stream');
+      sse.onmessage = (event) => {
+        dashboardData = JSON.parse(event.data);
+        updateUI();
+      };
+      sse.onerror = () => {
+        console.warn("SSE desconectado, tentando reconectar em 3s...");
+        setTimeout(connectSSE, 3000);
+      };
+    }
+
+    function updateUI() {
+      if (!dashboardData || !dashboardData.students) return;
+
+      document.getElementById('stat-total').innerText = dashboardData.totalStudents || 24;
+      document.getElementById('stat-delivered').innerText = dashboardData.deliveredCount || 0;
+      document.getElementById('stat-pending').innerText = dashboardData.pendingCount || 24;
+      document.getElementById('stat-avg').innerText = `${dashboardData.avgScore || '0.0'} / 8.0`;
+
+      const pct = dashboardData.totalStudents > 0
+        ? Math.round((dashboardData.deliveredCount / dashboardData.totalStudents) * 100)
+        : 0;
+
+      document.getElementById('stat-delivered-pct').innerText = `${pct}% da turma`;
+      document.getElementById('progress-pct-text').innerText = `${pct}% (${dashboardData.deliveredCount} de ${dashboardData.totalStudents})`;
+      document.getElementById('progress-bar-fill').style.width = `${pct}%`;
+
+      document.getElementById('filter-all').innerText = `Todos (${dashboardData.totalStudents})`;
+      document.getElementById('filter-delivered').innerText = `Entregues (${dashboardData.deliveredCount})`;
+      document.getElementById('filter-pending').innerText = `Pendentes (${dashboardData.pendingCount})`;
+
+      renderGrid();
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      ['all', 'delivered', 'pending'].forEach(f => {
+        const btn = document.getElementById('filter-' + f);
+        if (f === filter) {
+          btn.className = "px-3 py-1.5 rounded-lg font-bold bg-indigo-600 text-white transition-all";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition-all";
+        }
+      });
+      renderGrid();
+    }
+
+    function filterStudents() {
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('students-grid');
+      grid.innerHTML = "";
+
+      const query = (document.getElementById('search-input').value || "").toLowerCase();
+
+      const filtered = dashboardData.students.filter(s => {
+        const matchesQuery = s.name.toLowerCase().includes(query);
+        if (!matchesQuery) return false;
+        if (currentFilter === 'delivered') return s.delivered;
+        if (currentFilter === 'pending') return !s.delivered;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-500 text-xs">
+            Nenhum aluno encontrado com este filtro.
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(s => {
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-2xl border transition-all ${
+          s.delivered
+            ? 'bg-slate-900 border-emerald-500/40 shadow-sm shadow-emerald-500/5'
+            : 'bg-slate-900/60 border-slate-800'
+        }`;
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="font-bold text-sm ${s.delivered ? 'text-white' : 'text-slate-300'}">
+                ${s.name}
+              </div>
+              <div class="text-[11px] text-slate-500 mt-0.5">Turma 2º 4</div>
+            </div>
+            <div>
+              ${
+                s.delivered
+                  ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">ENTREGOU</span>`
+                  : `<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">PENDENTE</span>`
+              }
+            </div>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+            ${
+              s.delivered
+                ? `
+                  <div>
+                    <span class="text-[11px] text-slate-400">Nota:</span>
+                    <span class="font-black text-emerald-400 text-sm ml-1">${s.score}/${s.total}</span>
+                  </div>
+                  <button onclick="openModal('${s.name}')" class="text-indigo-400 hover:text-indigo-300 text-[11px] font-semibold underline">
+                    Ver Respostas ❯
+                  </button>
+                `
+                : `
+                  <div class="text-[11px] text-slate-500 italic">Ainda não começou</div>
+                  <span class="text-slate-600 text-xs">⏳</span>
+                `
+            }
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function openModal(name) {
+      const student = dashboardData.students.find(s => s.name === name);
+      if (!student || !student.delivered) return;
+
+      document.getElementById('modal-student-name').innerText = student.name;
+      document.getElementById('modal-student-time').innerText = `Entregue em: ${student.submittedAt || 'Horário registrado'}`;
+      document.getElementById('modal-student-score').innerText = `${student.score} de ${student.total} acertos (${Math.round((student.score/student.total)*100)}%)`;
+
+      const list = document.getElementById('modal-answers-list');
+      list.innerHTML = "";
+
+      if (student.answers && student.answers.length > 0) {
+        student.answers.forEach(a => {
+          const item = document.createElement('div');
+          item.className = `p-3 rounded-xl border text-xs ${
+            a.isCorrect
+              ? 'bg-emerald-500/10 border-emerald-500/30'
+              : 'bg-rose-500/10 border-rose-500/30'
+          }`;
+
+          item.innerHTML = `
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-slate-200">Questão ${a.questionNumber}</span>
+              <span class="font-bold text-[11px] ${a.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
+                ${a.isCorrect ? '✓ Acertou' : '✕ Errou'}
+              </span>
+            </div>
+            <div class="mono text-[11px] text-slate-400 mb-1.5">${a.equation}</div>
+            <div class="text-[11px] text-slate-300">
+              Resposta do aluno: <b class="${a.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${a.userAnswer}</b> 
+              (Gabarito: <b>${a.correctAnswer}</b>)
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      } else {
+        list.innerHTML = `<div class="text-xs text-slate-500 italic text-center py-4">Detalhes não gravados nesta versão.</div>`;
+      }
+
+      document.getElementById('details-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('details-modal').classList.add('hidden');
+    }
+
+    function copyStudentLink() {
+      const link = window.location.origin;
+      navigator.clipboard.writeText(link).then(() => {
+        alert("✅ Link dos alunos copiado com sucesso!\n\nLink: " + link + "\n\nVocê já pode colar no grupo de WhatsApp da turma 2º 4!");
+      }).catch(() => {
+        prompt("Copie o link abaixo para enviar aos alunos:", link);
+      });
+    }
+
+    // Init
+    loadInitialData();
+    connectSSE();
+  </script>
+</body>
+</html>
