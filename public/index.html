@@ -6,6 +6,8 @@
   <title>Sistemas 3x3 • Prof. Natanael • 2º 4</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
@@ -39,11 +41,63 @@
   <!-- Main Container -->
   <main class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col justify-center">
 
+    <!-- SCREEN AWAIT: ATIVIDADE AINDA NÃO ABERTA (ANTES DE 15/10 ÀS 07:30) -->
+    <section id="screen-await" class="hidden space-y-5 text-center animate-fade-in">
+      <div class="bg-slate-800/90 border border-indigo-500/40 rounded-2xl p-6 shadow-xl space-y-4">
+        <div class="w-16 h-16 bg-indigo-500/20 border border-indigo-500/40 rounded-2xl mx-auto flex items-center justify-center text-3xl">
+          🕒
+        </div>
+        <div>
+          <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 rounded-full text-xs font-bold uppercase tracking-wider">
+            Atividade Remota Agendada
+          </span>
+          <h2 class="text-xl font-black text-white mt-3">Abertura em Breve!</h2>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            Esta atividade remota do <b>Prof. Natanael</b> estará disponível exclusivamente no dia:
+          </p>
+          <div class="mt-3 p-3 bg-slate-950 rounded-xl border border-slate-700 mono font-bold text-indigo-400 text-sm">
+            📅 15 de Outubro (Amanhã)<br>
+            ⏰ Das 07:30 às 23:59
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-900 rounded-xl border border-slate-800">
+          <div class="text-[11px] text-slate-400 uppercase font-semibold mb-1">Tempo restante para abertura:</div>
+          <div id="countdown-timer" class="text-xl font-black text-emerald-400 mono">--:--:--</div>
+        </div>
+
+        <button onclick="location.reload()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+          🔄 Atualizar Página
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN EXPIRED: ATIVIDADE ENCERRADA (APÓS 15/10 ÀS 23:59) -->
+    <section id="screen-expired" class="hidden space-y-5 text-center animate-fade-in">
+      <div class="bg-slate-800/90 border border-rose-500/40 rounded-2xl p-6 shadow-xl space-y-4">
+        <div class="w-16 h-16 bg-rose-500/20 border border-rose-500/40 rounded-2xl mx-auto flex items-center justify-center text-3xl">
+          🔒
+        </div>
+        <div>
+          <span class="px-3 py-1 bg-rose-500/20 text-rose-300 border border-rose-500/40 rounded-full text-xs font-bold uppercase tracking-wider">
+            Prazo Finalizado
+          </span>
+          <h2 class="text-xl font-black text-white mt-3">Atividade Encerrada</h2>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            O período de entrega remota desta atividade encerrou no dia <b>15/10 às 23:59</b>.
+          </p>
+        </div>
+        <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-700/80 text-xs text-slate-400">
+          Caso tenha tido algum imprevisto ou problema técnico, procure o <b>Prof. Natanael</b> na próxima aula da EETI Jacimar Gama.
+        </div>
+      </div>
+    </section>
+
     <!-- SCREEN 1: IDENTIFICAÇÃO DO ALUNO -->
     <section id="screen-login" class="space-y-5 animate-fade-in">
       <div class="text-center space-y-2 pt-2">
         <span class="inline-block px-3 py-1 bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 rounded-full text-xs font-semibold">
-          🚀 Atividade Interativa
+          🚀 Atividade Remota • 15/10 (07:30 às 23:59)
         </span>
         <h2 class="text-2xl font-extrabold text-white">Desafio do Sistema 3x3</h2>
         <p class="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
@@ -73,7 +127,7 @@
       </div>
 
       <div class="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3.5 text-center text-xs text-slate-400">
-        💡 O professor recebe sua entrega em tempo real assim que você terminar!
+        💡 O professor recebe sua entrega no banco de dados e no painel em tempo real!
       </div>
     </section>
 
@@ -193,7 +247,7 @@
       <div class="flex items-center justify-between text-xs font-semibold">
         <div class="flex items-center gap-1.5 text-indigo-400">
           <span>📝</span>
-          <span id="quiz-question-number">Pergunta 1 de 5</span>
+          <span id="quiz-question-number">Pergunta 1 de 8</span>
         </div>
         <div class="px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
           Acertos: <b id="quiz-hits" class="text-emerald-400">0</b>
@@ -202,7 +256,7 @@
 
       <!-- Progress bar -->
       <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-        <div id="quiz-bar" class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full w-1/5 transition-all duration-300"></div>
+        <div id="quiz-bar" class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full w-1/8 transition-all duration-300"></div>
       </div>
 
       <!-- Question Card -->
@@ -271,7 +325,7 @@
         </button>
 
         <div id="submit-loading" class="hidden text-xs text-indigo-400 font-semibold animate-pulse">
-          Enviando sua entrega para o professor...
+          Enviando sua entrega para o banco de dados...
         </div>
       </div>
     </section>
@@ -331,6 +385,18 @@
   </footer>
 
   <script>
+    // Supabase Credentials
+    const SUPABASE_URL = "https://pkhmksztjzfwtxjuryis.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_uFlH9vFL5VlLp2ODV2WpOg_97EiE-GG";
+    let supabaseClient = null;
+    try {
+      if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (e) {
+      console.warn("Supabase client init:", e);
+    }
+
     // 24 Students Roster
     const STUDENTS = [
       "Emanuel Nunes",
@@ -408,8 +474,59 @@
     let userScore = 0;
     let answersRecord = [];
 
+    // Schedule window: 15/10 das 07:30 às 23:59
+    function checkScheduleWindow() {
+      const urlParams = new URLSearchParams(window.location.search);
+      // Permite ao Professor testar a qualquer momento com ?preview=prof ou ?test=true
+      if (urlParams.has('preview') || urlParams.has('test')) {
+        return true;
+      }
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+
+      // Início: 15/10 às 07:30
+      const start = new Date(currentYear, 9, 15, 7, 30, 0); // Mês 9 = Outubro (0-indexed)
+      // Fim: 15/10 às 23:59:59
+      const end = new Date(currentYear, 9, 15, 23, 59, 59);
+
+      if (now < start) {
+        document.getElementById('screen-login').classList.add('hidden');
+        document.getElementById('screen-await').classList.remove('hidden');
+        updateCountdown(start);
+        setInterval(() => updateCountdown(start), 1000);
+        return false;
+      }
+
+      if (now > end) {
+        document.getElementById('screen-login').classList.add('hidden');
+        document.getElementById('screen-expired').classList.remove('hidden');
+        return false;
+      }
+
+      return true;
+    }
+
+    function updateCountdown(targetDate) {
+      const now = new Date();
+      const diff = targetDate - now;
+      if (diff <= 0) {
+        location.reload();
+        return;
+      }
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+      const timerElem = document.getElementById('countdown-timer');
+      if (timerElem) {
+        timerElem.innerText = `${String(hours).padStart(2,'0')}h ${String(mins).padStart(2,'0')}m ${String(secs).padStart(2,'0')}s`;
+      }
+    }
+
     // Populate student dropdown on load
     window.addEventListener('DOMContentLoaded', () => {
+      if (!checkScheduleWindow()) return;
+
       const select = document.getElementById('student-select');
       STUDENTS.forEach(name => {
         const opt = document.createElement('option');
@@ -534,45 +651,59 @@
       btn.disabled = true;
       loading.classList.remove('hidden');
 
+      const now = new Date();
+      const timeFormatted = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const dateFormatted = now.toLocaleDateString('pt-BR');
+      const submissionTime = `${dateFormatted} às ${timeFormatted}`;
+
       const payload = {
-        studentName: selectedStudent,
+        student_name: selectedStudent,
         score: userScore,
         total: QUESTIONS.length,
-        answers: answersRecord
+        answers: answersRecord,
+        submitted_at: submissionTime
       };
 
+      // 1. Salvar no Supabase (Nuvem em tempo real)
+      if (supabaseClient) {
+        try {
+          const { error } = await supabaseClient.from('entregas').insert([payload]);
+          if (error) console.warn("Supabase insert warning:", error.message);
+        } catch (e) {
+          console.warn("Supabase exception:", e);
+        }
+      }
+
+      // 2. Salvar no Servidor Local / Endpoint de fallback
       try {
-        const res = await fetch('/api/submit', {
+        await fetch('/api/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            studentName: selectedStudent,
+            score: userScore,
+            total: QUESTIONS.length,
+            answers: answersRecord
+          })
         });
-
-        const data = await res.json();
-
-        if (data.success) {
-          confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
-          document.getElementById('screen-finish').classList.add('hidden');
-          document.getElementById('screen-confirmed').classList.remove('hidden');
-
-          document.getElementById('receipt-name').innerText = selectedStudent;
-          document.getElementById('receipt-score').innerText = `${userScore} / ${QUESTIONS.length}`;
-          document.getElementById('receipt-date').innerText = data.submittedAt || new Date().toLocaleTimeString('pt-BR');
-        } else {
-          alert("Aviso: " + (data.error || "Erro ao enviar. Tente novamente."));
-          btn.disabled = false;
-        }
       } catch (err) {
-        console.warn("Offline fallback submission:", err);
-        // Fallback local visual confirmation
-        document.getElementById('screen-finish').classList.add('hidden');
-        document.getElementById('screen-confirmed').classList.remove('hidden');
-        document.getElementById('receipt-name').innerText = selectedStudent;
-        document.getElementById('receipt-score').innerText = `${userScore} / ${QUESTIONS.length}`;
-        document.getElementById('receipt-date').innerText = new Date().toLocaleTimeString('pt-BR');
-      } finally {
-        loading.classList.add('hidden');
+        // Fallback offline / GitHub Pages
       }
+
+      // 3. Salvar no LocalStorage como segurança
+      try {
+        localStorage.setItem(`entrega_${selectedStudent}`, JSON.stringify(payload));
+      } catch (e) {}
+
+      // Efeito de sucesso e comprovante
+      confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
+      document.getElementById('screen-finish').classList.add('hidden');
+      document.getElementById('screen-confirmed').classList.remove('hidden');
+
+      document.getElementById('receipt-name').innerText = selectedStudent;
+      document.getElementById('receipt-score').innerText = `${userScore} / ${QUESTIONS.length}`;
+      document.getElementById('receipt-date').innerText = submissionTime;
+      loading.classList.add('hidden');
     }
   </script>
 </body>
