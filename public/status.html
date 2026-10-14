@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mural de Entregas • 2º 4 • Prof. Natanael</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+  <!-- Mobile Top Header -->
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-30 px-4 py-3 shadow-md">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-xl shadow-md shadow-emerald-500/20">
+          📋
+        </div>
+        <div>
+          <div class="text-[10px] font-bold tracking-wider uppercase text-emerald-400">EETI Profª. Jacimar Gama</div>
+          <h1 class="text-sm font-bold text-white leading-tight">Mural de Entregas • 2º 4</h1>
+          <div class="text-[11px] text-slate-400">Prof. Natanael de Matemática</div>
+        </div>
+      </div>
+      <a href="./index.html" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+        Fazer Quiz ➔
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-md w-full mx-auto p-4 space-y-4">
+
+    <!-- Hero Card -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center space-y-3">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        Atualização em Tempo Real
+      </div>
+      <div>
+        <h2 class="text-lg font-black text-white">Status da Turma 2º 4</h2>
+        <p class="text-xs text-slate-400 mt-1">
+          Confira abaixo se a sua atividade remota de <b>Sistemas Lineares 3x3</b> já foi confirmada!
+        </p>
+      </div>
+
+      <!-- Quick Metrics -->
+      <div class="grid grid-cols-2 gap-2 text-center pt-1">
+        <div class="bg-slate-950 border border-emerald-500/30 p-2.5 rounded-xl">
+          <div class="text-[11px] text-slate-400 font-medium">Entregaram</div>
+          <div id="stat-delivered" class="text-xl font-black text-emerald-400 mt-0.5">0</div>
+        </div>
+        <div class="bg-slate-950 border border-amber-500/30 p-2.5 rounded-xl">
+          <div class="text-[11px] text-slate-400 font-medium">Pendentes</div>
+          <div id="stat-pending" class="text-xl font-black text-amber-400 mt-0.5">24</div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="space-y-1 text-left pt-1">
+        <div class="flex justify-between text-[11px] font-bold">
+          <span class="text-slate-400">Progresso da turma:</span>
+          <span id="stat-pct" class="text-emerald-400">0%</span>
+        </div>
+        <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
+          <div id="progress-bar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Input -->
+    <div class="relative">
+      <input type="text" id="search-input" oninput="renderList()" placeholder="🔍 Digite seu nome para conferir..." class="w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-500 outline-none transition-all shadow-inner">
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="grid grid-cols-3 gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs text-center font-bold">
+      <button onclick="setFilter('all')" id="btn-all" class="py-1.5 rounded-lg bg-indigo-600 text-white transition-all">Todos (24)</button>
+      <button onclick="setFilter('delivered')" id="btn-delivered" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Entregou</button>
+      <button onclick="setFilter('pending')" id="btn-pending" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Falta</button>
+    </div>
+
+    <!-- Students List -->
+    <div id="students-container" class="space-y-2">
+      <!-- Injected via JS -->
+    </div>
+
+    <!-- Floating Action for Pending Students -->
+    <div class="pt-2">
+      <a href="./index.html" class="block w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-95 text-center text-white font-extrabold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all">
+        🚀 Ainda não entregou? Toque aqui para fazer a atividade!
+      </a>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-4 px-4 text-center text-[11px] text-slate-500 border-t border-slate-900">
+    EETI Bilíngue Profª. Jacimar Da Silva Gama • Atividade Remota 15/10
+  </footer>
+
+  <script>
+    const SUPABASE_URL = "https://pkhmksztjzfwtxjuryis.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_uFlH9vFL5VlLp2ODV2WpOg_97EiE-GG";
+    let supabaseClient = null;
+
+    const STUDENTS = [
+      "Emanuel Nunes",
+      "Emanuelly Melo",
+      "Leonardo Lima",
+      "Maria Eduarda",
+      "Maria Luisa *",
+      "Micaela Dos Santos",
+      "Nicolas Carvalho",
+      "Pedro Henrique",
+      "Priscila Evellyn",
+      "Rayanna Ribeiro",
+      "Rayra Alana",
+      "Renata Sophia",
+      "Rian De Sa Ribeiro",
+      "Sarah Melo",
+      "Sophia Da Silva",
+      "Sophya Oliveira",
+      "Taicilane Pedroza",
+      "Victor Aldenney",
+      "Victor Braiam",
+      "Vitor Eduardo",
+      "Vitoria Julia",
+      "Yasmin Giovana *",
+      "Yellen Biatriz",
+      "NATANAEL MELHOR ALUNO"
+    ];
+
+    let deliveredMap = {};
+    let currentFilter = 'all';
+
+    try {
+      if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (e) {
+      console.warn("Supabase init:", e);
+    }
+
+    async function loadStatus() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from('entregas')
+          .select('student_name, submitted_at');
+
+        if (!error && data) {
+          data.forEach(item => {
+            deliveredMap[item.student_name] = item.submitted_at || 'Confirmado';
+          });
+          updateView();
+        }
+      } catch (err) {
+        console.warn("Erro ao buscar dados:", err);
+      }
+    }
+
+    function subscribeRealtime() {
+      if (!supabaseClient) return;
+      try {
+        supabaseClient
+          .channel('public:status_mural')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'entregas' }, payload => {
+            const item = payload.new;
+            deliveredMap[item.student_name] = item.submitted_at || 'Confirmado';
+            updateView();
+          })
+          .subscribe();
+      } catch (e) {}
+    }
+
+    function updateView() {
+      const total = STUDENTS.length;
+      const deliveredCount = Object.keys(deliveredMap).length;
+      const pendingCount = total - deliveredCount;
+      const pct = Math.round((deliveredCount / total) * 100);
+
+      document.getElementById('stat-delivered').innerText = deliveredCount;
+      document.getElementById('stat-pending').innerText = pendingCount;
+      document.getElementById('stat-pct').innerText = `${pct}% (${deliveredCount}/${total})`;
+      document.getElementById('progress-bar').style.width = `${pct}%`;
+
+      document.getElementById('btn-all').innerText = `Todos (${total})`;
+      document.getElementById('btn-delivered').innerText = `Entregou (${deliveredCount})`;
+      document.getElementById('btn-pending').innerText = `Falta (${pendingCount})`;
+
+      renderList();
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      ['all', 'delivered', 'pending'].forEach(f => {
+        const btn = document.getElementById('btn-' + f);
+        if (f === filter) {
+          btn.className = "py-1.5 rounded-lg bg-indigo-600 text-white transition-all";
+        } else {
+          btn.className = "py-1.5 rounded-lg text-slate-400 hover:text-white transition-all";
+        }
+      });
+      renderList();
+    }
+
+    function renderList() {
+      const container = document.getElementById('students-container');
+      container.innerHTML = "";
+      const query = (document.getElementById('search-input').value || "").toLowerCase();
+
+      const filtered = STUDENTS.filter(name => {
+        const matchesQuery = name.toLowerCase().includes(query);
+        if (!matchesQuery) return false;
+        const isDelivered = !!deliveredMap[name];
+        if (currentFilter === 'delivered') return isDelivered;
+        if (currentFilter === 'pending') return !isDelivered;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-xs text-slate-500">
+            Nenhum aluno encontrado.
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach((name, idx) => {
+        const isDelivered = !!deliveredMap[name];
+        const time = deliveredMap[name];
+
+        const card = document.createElement('div');
+        card.className = `p-3 rounded-xl border flex items-center justify-between transition-all ${
+          isDelivered
+            ? 'bg-emerald-950/20 border-emerald-500/40'
+            : 'bg-slate-900/60 border-slate-800'
+        }`;
+
+        card.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <span class="text-xs font-bold text-slate-500 w-5 text-right">${idx + 1}.</span>
+            <div>
+              <div class="font-bold text-xs ${isDelivered ? 'text-white' : 'text-slate-300'}">
+                ${name}
+              </div>
+              <div class="text-[10px] ${isDelivered ? 'text-emerald-400' : 'text-slate-500'}">
+                ${isDelivered ? `Entregue • ${time}` : 'Aguardando entrega'}
+              </div>
+            </div>
+          </div>
+          <div>
+            ${
+              isDelivered
+                ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <span>✓</span> ENTREGOU
+                   </span>`
+                : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                    <span>⏳</span> PENDENTE
+                   </span>`
+            }
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // Init
+    loadStatus();
+    subscribeRealtime();
+    setInterval(loadStatus, 5000); // Polling secundário
+  </script>
+</body>
+</html>

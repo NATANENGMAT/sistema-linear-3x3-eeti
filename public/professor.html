@@ -41,6 +41,9 @@
         <button onclick="copyStudentLink()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5">
           <span>🔗</span> Copiar Link dos Alunos
         </button>
+        <button onclick="copyMuralLink()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5">
+          <span>📋</span> Copiar Mural da Turma
+        </button>
         <a href="./index.html?preview=prof" target="_blank" class="px-3 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5">
           <span>👁️</span> Testar como Aluno
         </a>
@@ -541,6 +544,16 @@ create policy "Permitir envio publico"
         alert("✅ Link dos alunos copiado!\n\nLink: " + studentUrl + "\n\nVocê já pode enviar no WhatsApp da turma 2º 4!");
       }).catch(() => {
         prompt("Copie o link abaixo para enviar aos alunos:", studentUrl);
+      });
+    }
+
+    function copyMuralLink() {
+      const base = window.location.origin + window.location.pathname.replace('professor.html', '');
+      const muralUrl = (base.endsWith('/') ? base : base + '/') + 'status.html';
+      navigator.clipboard.writeText(muralUrl).then(() => {
+        alert("✅ Link do Mural da Turma copiado!\n\nLink: " + muralUrl + "\n\nVocê pode enviar no WhatsApp para os alunos acompanharem quem já entregou!");
+      }).catch(() => {
+        prompt("Copie o link do mural abaixo:", muralUrl);
       });
     }
 
